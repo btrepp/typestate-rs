@@ -207,7 +207,7 @@ impl ExpandState for ItemStruct {
             .push(::syn::parse_quote!(State: #type_param_ident));
 
         let field_to_add = ::quote::quote!(
-            pub state: State
+            state: State
         );
 
         match &mut self.fields {

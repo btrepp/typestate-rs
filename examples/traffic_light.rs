@@ -76,7 +76,7 @@ mod traffic_light {
     #[derive(Debug)]
     #[automaton]
     pub struct TrafficLight {
-        pub cycles: u64,
+        cycles: u64,
     }
     #[state]
     pub struct Green;
@@ -103,68 +103,70 @@ mod traffic_light {
         Yellow,
         Red,
     }
-}
 
-impl GreenState for TrafficLight<Green> {
-    fn to_yellow(self) -> TrafficLight<Yellow> {
-        println!("Green -> Yellow");
-        TrafficLight::<Yellow> {
-            cycles: self.cycles,
-            state: Yellow,
+    impl GreenState for TrafficLight<Green> {
+        fn to_yellow(self) -> TrafficLight<Yellow> {
+            println!("Green -> Yellow");
+            TrafficLight::<Yellow> {
+                cycles: self.cycles,
+                state: Yellow,
+            }
         }
     }
-}
-
-impl YellowState for TrafficLight<Yellow> {
-    fn to_red(self) -> TrafficLight<Red> {
-        println!("Yellow -> Red");
-        TrafficLight::<Red> {
-            // increment the cycle
-            cycles: self.cycles + 1,
-            state: Red,
+    
+    impl YellowState for TrafficLight<Yellow> {
+        fn to_red(self) -> TrafficLight<Red> {
+            println!("Yellow -> Red");
+            TrafficLight::<Red> {
+                // increment the cycle
+                cycles: self.cycles + 1,
+                state: Red,
+            }
         }
     }
-}
-
-impl RedState for TrafficLight<Red> {
-    fn to_either(self) -> Either {
-        Either::Yellow(TrafficLight::<Yellow> {
-            cycles: self.cycles,
-            state: Yellow,
-        })
-    }
-
-    fn to_green(self) -> TrafficLight<Green> {
-        println!("Red -> Green");
-        TrafficLight::<Green> {
-            cycles: self.cycles,
-            state: Green,
+    
+    impl RedState for TrafficLight<Red> {
+        fn to_either(self) -> Either {
+            Either::Yellow(TrafficLight::<Yellow> {
+                cycles: self.cycles,
+                state: Yellow,
+            })
+        }
+    
+        fn to_green(self) -> TrafficLight<Green> {
+            println!("Red -> Green");
+            TrafficLight::<Green> {
+                cycles: self.cycles,
+                state: Green,
+            }
+        }
+    
+        fn turn_on() -> TrafficLight<Red> {
+            println!("Turning on...");
+            TrafficLight::<Red> {
+                cycles: 0,
+                state: Red,
+            }
+        }
+    
+        fn turn_off(self) {
+            println!("Turning off...");
+            // ... consume
         }
     }
-
-    fn turn_on() -> TrafficLight<Red> {
-        println!("Turning on...");
-        TrafficLight::<Red> {
-            cycles: 0,
-            state: Red,
+    
+    impl<State> TrafficLight<State>
+    where
+        State: TrafficLightState,
+    {
+        pub fn requires_maintenance(&self) -> bool {
+            self.cycles > super::N_CYCLES_MAINTENANCE
+        }
+    
+        pub fn reset_cycles(&mut self) {
+            self.cycles = 0;
         }
     }
-
-    fn turn_off(self) {
-        println!("Turning off...");
-        // ... consume
-    }
+    
 }
 
-impl<State> TrafficLight<State>
-where
-    State: TrafficLightState,
-{
-    fn requires_maintenance(&self) -> bool {
-        self.cycles > N_CYCLES_MAINTENANCE
-    }
-
-    fn reset_cycles(&mut self) {
-        self.cycles = 0;
-    }
-}
